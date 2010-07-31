@@ -1,3 +1,5 @@
+package rrfarm;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
@@ -28,12 +31,16 @@ public class Farmer extends Thread{
 	public String name;
 	public String friends;
 	public String index;	//农场首页
-	public int endFlag = 0;
+	public int endFlag;
 	private String pageContent;
-	public HttpClient hc = new HttpClient();
-	{
+	private HttpClient hc;
+	
+	public Farmer() {
+		System.out.println("Here !!!!!!!");
+		this.endFlag = 0;
+		this.hc = new HttpClient();
 		System.getProperties().setProperty("httpclient.useragent", "Mozilla/4.0");
-		hc.getParams().setContentCharset(HTTP.UTF_8); 
+		this.hc.getParams().setContentCharset(HTTP.UTF_8);
 	}
 	
 	/**
@@ -75,7 +82,7 @@ public class Farmer extends Thread{
 		}
 		GetMethod getMethod = new GetMethod(href);
         getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-        hc.executeMethod(getMethod);
+        this.hc.executeMethod(getMethod);
 		byte[] responseBody = getMethod.getResponseBody();
         pageContent = new String(responseBody, "UTF-8");
 	}
@@ -87,20 +94,31 @@ public class Farmer extends Thread{
 	 * @throws IOException
 	 */
 	private boolean login() throws HttpException, IOException {
+		clickHref("http://m.renren.com");
+		
 		PostMethod postMethod = new PostMethod("http://3g.renren.com/login.do?fx=0&autoLogin=true");
 		
 		System.out.println("email = " + email);
-		System.out.println("password = " + pw);
+//		System.out.println("password = " + pw);
 		postMethod.addParameter("email", email);
 		postMethod.addParameter("login", "登录");
-		postMethod.addParameter("origURL", "/home.do");
+//		postMethod.addParameter("origURL", "/home.do");
 		postMethod.addParameter("password", pw);
-		hc.getParams().setContentCharset(HTTP.UTF_8);
+
+		Object tmp[] = postMethod.getParameters();
+		for (Object object : tmp) {
+			System.out.println(object);
+		}
+		
+		this.hc.getParams().setContentCharset(HTTP.UTF_8);
 		postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 		try {
 			System.out.println("login...");
-			int statusCode = hc.executeMethod(postMethod);
+			int statusCode = this.hc.executeMethod(postMethod);
 			System.out.println("statusCode = " + statusCode);
+			if (statusCode != HttpStatus.SC_MOVED_TEMPORARILY){
+				return false;
+			}
 			
             byte[] responseBody = postMethod.getResponseBody();
             String tLine = new String(responseBody, "UTF-8");
@@ -301,7 +319,7 @@ public class Farmer extends Thread{
 				//steal();
 
 				long remain = getNextTime() + 60000L;
-				System.out.println("距下次工作还剩: " + (remain/3600000L) + "小时" + (remain%3600000L/60000L) + "分");
+				System.out.println(name + ": 距下次工作还剩: " + (remain/3600000L) + "小时" + (remain%3600000L/60000L) + "分");
 				synchronized (this) {
 					wait(remain);
 				}
