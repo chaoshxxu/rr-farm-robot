@@ -15,16 +15,30 @@
 	    </global-exception-mappings>
 	    
 	    
+	    <!-- 获取用户列表 -->
+        <action name="getUserList" class="rrfarm.MainAction" method="getUserList">
+			<result name="done" >/index.jsp</result>
+	    </action>
+	    
 	    <!-- 跳转至主页 -->
-        <action name="toIndex" class="MainAction" method="toIndex">
+        <action name="toIndex" class="rrfarm.MainAction" method="toIndex">
 	        <result name="success">/index.jsp</result>
 	    </action>
 
 	    <!-- 添加用户 -->
-        <action name="add" class="MainAction" method="add">
+        <action name="add" class="rrfarm.MainAction" method="add">
 			<result name="success" type="redirect">toIndex.action</result>		
 	    </action>
 
+	    <!-- 强制干活 -->
+        <action name="work" class="rrfarm.MainAction" method="work">
+			<result name="success" type="redirect">toIndex.action</result>		
+	    </action>
+
+	    <!-- 删除用户 -->
+        <action name="remove" class="rrfarm.MainAction" method="remove">
+			<result name="success" type="redirect">toIndex.action</result>		
+	    </action>
 
 	</package>
 </struts>

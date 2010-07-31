@@ -22,21 +22,28 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		<s:form action="add">
 			<s:textfield name="email" size="100" label="Email"/>
 			<s:password name="pw" size="100" label="Password" />
-			<s:textarea name="friends" label="Friends" cols="100" rows="5"/>
-			<s:submit value="添加"/>
+			<s:textarea name="friends" label="Friends" cols="85" rows="5"/>
 		</s:form>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="删除 " onclick="document.forms['add'].action='remove.action';document.forms['add'].submit();" />
+		<input type="button" value="添加/更新 " onclick="document.forms['add'].action='add.action';document.forms['add'].submit();" />
 		
-		<br/ ><br/ >
+		<br /><br />
 		
-		<s:actionerror />
-		<s:iterator value="list" status="stat">
-			<s:property value="list[#stat.index][0]" escape="false"/>
-			&nbsp;&nbsp;&nbsp;&nbsp;
-			<s:property value="list[#stat.index][2]" />
-			&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href="remove.action?email=<s:property value="list[#stat.index][1]" />" >删除</a>
-			<br />
-		</s:iterator>
-		
+		<table>
+			<s:iterator value="list" status="stat">
+				<tr>
+					<td>
+						<s:property value="list[#stat.index][0]" escape="false"/>
+					</td>
+					<td>
+						<s:property value="list[#stat.index][2]" />
+					</td>
+					<td>
+						<a href="work.action?email=<s:property value="list[#stat.index][1]" />" >干活</a>
+					</td>
+				</tr>
+			</s:iterator>
+		</table>
 	</body>
+	 
 </html>
