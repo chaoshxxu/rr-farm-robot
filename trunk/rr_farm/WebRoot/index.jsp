@@ -20,9 +20,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		</center>
 		
 		<s:form action="add">
-			<s:textfield name="email" size="100" label="Email"/>
-			<s:password name="pw" size="100" label="Password" />
-			<s:textarea name="friends" label="Friends" cols="85" rows="5"/>
+			<s:textfield name="email" size="100" label="账号"/>
+			<s:password name="pw" size="100" label="密码" />
+			<s:textarea name="feedFfriends" label="喂友" cols="85" rows="3"/>
+			<s:textarea name="stealFriends" label="偷友" cols="85" rows="3"/>
 		</s:form>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="删除 " onclick="document.forms['add'].action='remove.action';document.forms['add'].submit();" />
 		<input type="button" value="添加/更新 " onclick="document.forms['add'].action='add.action';document.forms['add'].submit();" />

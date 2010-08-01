@@ -29,7 +29,8 @@ public class Farmer extends Thread{
 	public String email;
 	public String pw;
 	public String name;
-	public String friends;
+	public String feedFriends;
+	public String stealFriends;
 	public String index;	//农场首页
 	public int endFlag;
 	private String pageContent;
@@ -39,8 +40,8 @@ public class Farmer extends Thread{
 		System.out.println("Here !!!!!!!");
 		this.endFlag = 0;
 		this.hc = new HttpClient();
-		System.getProperties().setProperty("httpclient.useragent", "Mozilla/4.0");
-		this.hc.getParams().setContentCharset(HTTP.UTF_8);
+		hc.getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");//设置信息 
+		hc.getParams().setContentCharset(HTTP.UTF_8);
 	}
 	
 	/**
@@ -94,18 +95,25 @@ public class Farmer extends Thread{
 	 * @throws IOException
 	 */
 	private boolean login() throws HttpException, IOException {
-		clickHref("http://m.renren.com");
+		clickHref("http://3g.renren.com/home.do");
 		
-		PostMethod postMethod = new PostMethod("http://3g.renren.com/login.do?fx=0&autoLogin=true");
+		PostMethod postMethod = new PostMethod("http://3g.renren.com/login.do");
 		
 		System.out.println("email = " + email);
 //		System.out.println("password = " + pw);
 		postMethod.addParameter("email", email);
 		postMethod.addParameter("login", "登录");
-//		postMethod.addParameter("origURL", "/home.do");
+		postMethod.addParameter("origURL", "/home.do");
 		postMethod.addParameter("password", pw);
-
+		
+		
 		Object tmp[] = postMethod.getParameters();
+		System.out.println("----------para--------------");
+		for (Object object : tmp) {
+			System.out.println(object);
+		}
+		tmp = hc.getState().getCookies();
+		System.out.println("----------cookie--------------");
 		for (Object object : tmp) {
 			System.out.println(object);
 		}
@@ -116,14 +124,15 @@ public class Farmer extends Thread{
 			System.out.println("login...");
 			int statusCode = this.hc.executeMethod(postMethod);
 			System.out.println("statusCode = " + statusCode);
-			if (statusCode != HttpStatus.SC_MOVED_TEMPORARILY){
-				return false;
-			}
 			
             byte[] responseBody = postMethod.getResponseBody();
             String tLine = new String(responseBody, "UTF-8");
             System.out.println("tLine = " + tLine);
-			
+
+            if (statusCode != HttpStatus.SC_MOVED_TEMPORARILY){
+				return false;
+			}
+
 			clickHref(postMethod.getResponseHeader("Location").getValue());
 
     		Matcher m = Pattern.compile("<div class=\"sec stat\"><b>([\\s\\S]+?)</b>").matcher(pageContent);
@@ -307,13 +316,14 @@ public class Farmer extends Thread{
 	public void run(){
 			
 		try {
-			if (!login()){
-				MainAction.farmerMap.remove(email);
-				return;
-			}
-			enterRRFarm();
 
 			while (endFlag == 0){
+				if (!login()){
+					MainAction.farmerMap.remove(email);
+					return;
+				}
+				enterRRFarm();
+				
 				fetch();
 				feed();
 				//steal();
