@@ -25,12 +25,18 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			<s:textarea name="feedFfriends" label="喂友" cols="85" rows="3"/>
 			<s:textarea name="stealFriends" label="偷友" cols="85" rows="3"/>
 		</s:form>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="删除 " onclick="document.forms['add'].action='remove.action';document.forms['add'].submit();" />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="删除 " onclick="document.forms['add'].action='remove.action';document.forms['add'].submit();" />
 		<input type="button" value="添加/更新 " onclick="document.forms['add'].action='add.action';document.forms['add'].submit();" />
 		
 		<br /><br />
 		
-		<table>
+		<table cellpadding="10">
+			<tr>
+				<th>姓名	</th>
+				<th>账号</th>
+				<th>下次开工时间</th>
+				<th></th>
+			</tr>
 			<s:iterator value="list" status="stat">
 				<tr>
 					<td>
@@ -40,7 +46,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 						<s:property value="list[#stat.index][2]" />
 					</td>
 					<td>
-						<a href="work.action?email=<s:property value="list[#stat.index][1]" />" >干活</a>
+						<s:if test="list[#stat.index][3] == null" >工作中...</s:if>
+						<s:else><s:date name="list[#stat.index][3]" /></s:else>
+					</td>
+					<td>
+						<a href="work.action?email=<s:property value="list[#stat.index][1]" />" >立刻开工</a>
 					</td>
 				</tr>
 			</s:iterator>
