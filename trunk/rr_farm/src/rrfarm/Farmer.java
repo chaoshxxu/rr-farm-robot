@@ -2,6 +2,7 @@ package rrfarm;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class Farmer extends Thread{
 	public String feedFriends;
 	public String stealFriends;
 	public String index;	//农场首页
+	public Date nextTime;
 	public int endFlag;
 	private String pageContent;
 	private HttpClient hc;
@@ -107,7 +109,7 @@ public class Farmer extends Thread{
 		postMethod.addParameter("password", pw);
 		
 		
-		Object tmp[] = postMethod.getParameters();
+/*		Object tmp[] = postMethod.getParameters();
 		System.out.println("----------para--------------");
 		for (Object object : tmp) {
 			System.out.println(object);
@@ -117,6 +119,7 @@ public class Farmer extends Thread{
 		for (Object object : tmp) {
 			System.out.println(object);
 		}
+*/
 		
 		this.hc.getParams().setContentCharset(HTTP.UTF_8);
 		postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
@@ -305,8 +308,8 @@ public class Farmer extends Thread{
 			}
 			clickHref(getHref("返回人人农场首页"));
 		}
+		nextTime = new Date(System.currentTimeMillis() + rem);
 		return rem;
-		
 	}
 
 	
@@ -332,9 +335,9 @@ public class Farmer extends Thread{
 				System.out.println(name + ": 距下次工作还剩: " + (remain/3600000L) + "小时" + (remain%3600000L/60000L) + "分");
 				synchronized (this) {
 					wait(remain);
+					nextTime = null;
 				}
 			}
-		
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

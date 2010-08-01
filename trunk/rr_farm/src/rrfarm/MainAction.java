@@ -39,7 +39,7 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 			Map.Entry entry = (Map.Entry) it.next();    
 			Object key = entry.getKey();
 			Object value = entry.getValue();
-			list.add(new Object[]{((Farmer)value).name, key, ((Farmer)value).email});
+			list.add(new Object[]{((Farmer)value).name, key, ((Farmer)value).email, ((Farmer)value).nextTime});
 		}
 		System.out.println(list.size());
 	}
@@ -51,7 +51,19 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	}
 	
 	public String add(){
-		Farmer farmer = new Farmer();
+		Farmer farmer;
+		if (farmerMap.containsKey(email)){
+			farmer = (Farmer) farmerMap.get(email);
+			if (farmer.pw.equals(pw)){
+				synchronized (farmer) {
+					farmer.endFlag = 1;
+					farmer.notify();
+				}
+			} else {
+				return SUCCESS;
+			}
+		}
+		farmer = new Farmer();
 		farmer.email = email;
 		farmer.pw = pw;
 		farmer.feedFriends = feedFriends;
