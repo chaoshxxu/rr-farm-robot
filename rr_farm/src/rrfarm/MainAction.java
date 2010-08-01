@@ -16,23 +16,28 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	
 	private static final long serialVersionUID = 1L;
 
-	static public Map farmerMap = new HashMap<String, Farmer>();
+	static public Map farmerMap;
+	static {
+		System.out.println("init farmerMap...");
+		farmerMap = new HashMap<String, Farmer>();
+	}
 	
 	public List list;
 	public String name;
 	public String email;
 	public String pw;
-	public String friends;
+	public String feedFriends;
+	public String stealFriends;
 	public HttpServletRequest request;
 	public String tip;
 	
 	public void getUserList() {
 		list = new ArrayList<String>();
-		Iterator it = farmerMap.entrySet().iterator()   ;    
+		Iterator it = farmerMap.entrySet().iterator();    
 		while (it.hasNext())    
 		{    
-			Map.Entry entry = (Map.Entry) it.next()   ;    
-			Object key = entry.getKey();    
+			Map.Entry entry = (Map.Entry) it.next();    
+			Object key = entry.getKey();
 			Object value = entry.getValue();
 			list.add(new Object[]{((Farmer)value).name, key, ((Farmer)value).email});
 		}
@@ -41,6 +46,7 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	
 	public String toIndex(){
 		getUserList();
+		System.out.println("farmerMap.size() = " + farmerMap.size());
 		return SUCCESS;
 	}
 	
@@ -48,7 +54,8 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 		Farmer farmer = new Farmer();
 		farmer.email = email;
 		farmer.pw = pw;
-		farmer.friends = friends;
+		farmer.feedFriends = feedFriends;
+		farmer.stealFriends = stealFriends;
 		synchronized (farmerMap) {
 			farmerMap.put(email, farmer);
 		}
@@ -113,13 +120,6 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 		this.pw = pw;
 	}
 
-	public String getFriends() {
-		return friends;
-	}
-
-	public void setFriends(String friends) {
-		this.friends = friends;
-	}
 	public void setServletRequest(HttpServletRequest request) {
 		this.request = request;
 	}
@@ -131,5 +131,20 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	public void setTip(String tip) {
 		this.tip = tip;
 	}
-	
+
+	public String getFeedFriends() {
+		return feedFriends;
+	}
+
+	public void setFeedFriends(String feedFriends) {
+		this.feedFriends = feedFriends;
+	}
+
+	public String getStealFriends() {
+		return stealFriends;
+	}
+
+	public void setStealFriends(String stealFriends) {
+		this.stealFriends = stealFriends;
+	}
 }
