@@ -69,7 +69,9 @@ public class Farmer extends Thread{
 	private String getHref(String name) {
 		Matcher m = Pattern.compile("href=\"([^\"]*)\"[^>]*?>" + name + "\\s*<").matcher(pageContent);
 		String href = m.find() ? m.group(1) : null;
-		System.out.println(name + " - " + href);
+		if (href != null){
+			System.out.println(name + " - " + href);
+		}
 		return href;
 	}
 	
@@ -278,7 +280,7 @@ public class Farmer extends Thread{
 	 * @throws IOException
 	 */
 	private long getNextTime() throws HttpException, IOException {
-		long rem = 0x7ffffffffffffL;
+		long rem = 10800000L;
 		clickHref(index);
 		String list[] = {
 				"【农田】",
@@ -308,7 +310,7 @@ public class Farmer extends Thread{
 			}
 			clickHref(getHref("返回人人农场首页"));
 		}
-		nextTime = new Date(System.currentTimeMillis() + rem);
+		nextTime = new Date(System.currentTimeMillis() + rem + 60000L);
 		return rem;
 	}
 
@@ -331,7 +333,7 @@ public class Farmer extends Thread{
 				feed();
 				//steal();
 
-				long remain = getNextTime() + 60000L;
+				long remain = getNextTime();
 				System.out.println(name + ": 距下次工作还剩: " + (remain/3600000L) + "小时" + (remain%3600000L/60000L) + "分");
 				synchronized (this) {
 					wait(remain);

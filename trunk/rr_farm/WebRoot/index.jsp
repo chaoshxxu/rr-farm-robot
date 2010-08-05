@@ -50,7 +50,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 						<s:else><s:date name="list[#stat.index][3]" /></s:else>
 					</td>
 					<td>
-						<a href="work.action?email=<s:property value="list[#stat.index][1]" />" >立刻开工</a>
+						<s:if test="list[#stat.index][3] != null" >
+							<a href="work.action?email=<s:property value='list[#stat.index][1]' />" >立刻开工</a>
+						</s:if>
 					</td>
 				</tr>
 			</s:iterator>
