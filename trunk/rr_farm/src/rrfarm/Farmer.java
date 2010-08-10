@@ -310,7 +310,8 @@ public class Farmer extends Thread{
 			}
 			clickHref(getHref("返回人人农场首页"));
 		}
-		nextTime = new Date(System.currentTimeMillis() + rem + 60000L);
+		rem += 60000L;
+		nextTime = new Date(System.currentTimeMillis() + rem);
 		return rem;
 	}
 
