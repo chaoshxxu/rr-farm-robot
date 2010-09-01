@@ -28,6 +28,7 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	public String pw;
 	public String feedFriends;
 	public String stealFriends;
+	public String reservedFood;
 	public HttpServletRequest request;
 	public String tip;
 	
@@ -39,18 +40,19 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 			Map.Entry entry = (Map.Entry) it.next();    
 			Object key = entry.getKey();
 			Object value = entry.getValue();
-			list.add(new Object[]{((Farmer)value).name, key, ((Farmer)value).email, ((Farmer)value).nextTime});
+			list.add(new Object[]{((Farmer)value).name, key, ((Farmer)value).email, ((Farmer)value).nextTime, ((Farmer)value).feedFriends, ((Farmer)value).stealFriends, ((Farmer)value).reservedFood});
 		}
-		System.out.println(list.size());
+//		System.out.println(list.size());
 	}
 	
 	public String toIndex(){
 		getUserList();
-		System.out.println("farmerMap.size() = " + farmerMap.size());
+//		System.out.println("farmerMap.size() = " + farmerMap.size());
 		return SUCCESS;
 	}
 	
 	public String add(){
+		
 		Farmer farmer;
 		if (farmerMap.containsKey(email)){
 			farmer = (Farmer) farmerMap.get(email);
@@ -66,12 +68,32 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 		farmer = new Farmer();
 		farmer.email = email;
 		farmer.pw = pw;
-		farmer.feedFriends = feedFriends;
-		farmer.stealFriends = stealFriends;
+
+		for (String st : feedFriends.split("\\s")) {
+			if (!st.isEmpty()){
+				farmer.feedFriends.add(st);
+			}
+		}
+
+		for (String st : stealFriends.split("\\s")) {
+			if (!st.isEmpty()){
+				farmer.stealFriends.add(st);
+			}
+		}
+		
+		for (String st : reservedFood.split("[^\\u4e00-\\u9fa5]")) {
+			if (!st.isEmpty()){
+				farmer.reservedFood.add(st);
+			}
+		}
+
 		synchronized (farmerMap) {
 			farmerMap.put(email, farmer);
 		}
 		farmer.start();
+
+		
+
 		return SUCCESS;
 	}
 	
@@ -159,4 +181,13 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	public void setStealFriends(String stealFriends) {
 		this.stealFriends = stealFriends;
 	}
+
+	public String getReservedFood() {
+		return reservedFood;
+	}
+
+	public void setReservedFood(String reservedFood) {
+		this.reservedFood = reservedFood;
+	}
+
 }

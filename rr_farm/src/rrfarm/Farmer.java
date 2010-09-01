@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,8 +32,10 @@ public class Farmer extends Thread{
 	public String email;
 	public String pw;
 	public String name;
-	public String feedFriends;
-	public String stealFriends;
+	public Set feedFriends = new HashSet();
+	public Set stealFriends = new HashSet();
+	public Set reservedFood = new HashSet();
+	
 	public String index;	//农场首页
 	public Date nextTime;
 	public int endFlag;
@@ -70,7 +74,7 @@ public class Farmer extends Thread{
 		Matcher m = Pattern.compile("href=\"([^\"]*)\"[^>]*?>" + name + "\\s*<").matcher(pageContent);
 		String href = m.find() ? m.group(1) : null;
 		if (href != null){
-			System.out.println(name + " - " + href);
+//			System.out.println(name + " - " + href);
 		}
 		return href;
 	}
@@ -85,6 +89,7 @@ public class Farmer extends Thread{
 		if (!href.startsWith("http")){
 			href = "http://mapps.renren.com" + href;
 		}
+		System.out.println("click : " + href);
 		GetMethod getMethod = new GetMethod(href);
         getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
         this.hc.executeMethod(getMethod);
@@ -140,9 +145,9 @@ public class Farmer extends Thread{
 
 			clickHref(postMethod.getResponseHeader("Location").getValue());
 
-    		Matcher m = Pattern.compile("<div class=\"sec stat\"><b>([\\s\\S]+?)</b>").matcher(pageContent);
+    		Matcher m = Pattern.compile("<div class=\"sec stat\"><b>([\\s\\S]+?):").matcher(pageContent);
     		if (m.find()){
-    			name = m.group(1).replaceAll(":", "");
+    			name = m.group(1);
     			return true;
     		}
         } catch(Exception e) {
@@ -256,8 +261,12 @@ public class Farmer extends Thread{
 		
 		for (String href : hrefList) {
 			clickHref(href);
+			Matcher m = Pattern.compile("(【饲料】|【原料】)\\s+([\u4e00-\u9fa5]+)").matcher(pageContent);
+			if (m.find() && reservedFood.contains(m.group(2))){
+				continue;
+			}
 			Map<String, String> map = new HashMap<String, String>();
-			Matcher m = Pattern.compile("name=\"([\\s\\S]+?)\" value=\"([\\s\\S]+?)\"").matcher(pageContent);
+			m = Pattern.compile("name=\"([\\s\\S]+?)\" value=\"([\\s\\S]+?)\"").matcher(pageContent);
 			PostMethod postMethod = new PostMethod("http://mapps.renren.com/rr_farm/farm/action/wap,feedAction.php?sid=" + map.get("sid"));
 			while (m.find()){
 				String key = m.group(1);
@@ -270,8 +279,99 @@ public class Farmer extends Thread{
 			hc.getParams().setContentCharset(HTTP.UTF_8); 
 			postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 			hc.executeMethod(postMethod);
+			postMethod.releaseConnection();
 		}
 	}
+	
+	/**
+	 * 帮别人喂畜生、喂机器
+	 * @throws HttpException
+	 * @throws IOException
+	 */
+	private void help() throws HttpException, IOException {
+		clickHref(index);
+		if (!pageContent.contains("【好友农场】★")){
+			return;
+		}
+		List<String> friendList = new ArrayList();
+		clickHref(getHref("【好友农场】★"));
+		Matcher m;
+		while (true){
+			m = Pattern.compile("<a href=\"([\\s\\S]+?)\" class=\"blue\">([\\s\\S]+?)的农场").matcher(pageContent);
+			while (m.find()){
+				String href = m.group(1);
+				String name = m.group(2);
+//				System.out.println("name = " + name);
+				if (feedFriends.contains(name) && !name.equals(this.name)){
+					friendList.add("http://mapps.renren.com" + href);
+				}
+			}
+			if (pageContent.contains("下一页")){
+				clickHref(getHref("下一页"));
+			} else {
+				break;
+			}
+		}
+
+		List<String> hrefList = new ArrayList();
+		for (String st : friendList) {
+			clickHref(st);
+			if (pageContent.contains("【畜牧】★")){
+				clickHref(getHref("【畜牧】★"));
+				while (true){
+					m = Pattern.compile("href=\"([^\"]*)\"[^>]*?>喂食<").matcher(pageContent);
+					while (m.find()){
+						hrefList.add(m.group(1));
+					}
+					if (pageContent.contains("下一页")){
+						clickHref(getHref("下一页"));
+					} else {
+						break;
+					}
+				}
+			}
+
+			clickHref(st);
+			if (pageContent.contains("【机械】★")){
+				clickHref(getHref("【机械】★"));
+				while (true){
+					m = Pattern.compile("href=\"([^\"]*)\"[^>]*?>添加<").matcher(pageContent);
+					while (m.find()){
+						hrefList.add(m.group(1));
+					}
+					if (pageContent.contains("下一页")){
+						clickHref(getHref("下一页"));
+					} else {
+						break;
+					}
+				}
+			}
+		}
+		
+		for (String href : hrefList) {
+			clickHref(href);
+			m = Pattern.compile("(【饲料】|【原料】)\\s+([\u4e00-\u9fa5]+)").matcher(pageContent);
+			if (m.find() && reservedFood.contains(m.group(2))){
+				continue;
+			}
+			Map<String, String> map = new HashMap<String, String>();
+			m = Pattern.compile("name=\"([\\s\\S]+?)\" value=\"([\\s\\S]+?)\"").matcher(pageContent);
+			PostMethod postMethod = new PostMethod("http://mapps.renren.com/rr_farm/farm/action/wap,feedFriendAction.php?sid=" + map.get("sid"));
+			while (m.find()){
+				String key = m.group(1);
+				String value = m.group(2);
+				if (!map.containsKey(key)){
+					map.put(key, value);
+					postMethod.addParameter(key, value);
+				}
+			}
+			hc.getParams().setContentCharset(HTTP.UTF_8); 
+			postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+			hc.executeMethod(postMethod);
+			postMethod.releaseConnection();
+		}
+	}
+
 	
 	/**
 	 * 获取下次开始工作的时间
@@ -280,7 +380,7 @@ public class Farmer extends Thread{
 	 * @throws IOException
 	 */
 	private long getNextTime() throws HttpException, IOException {
-		long rem = 10800000L;
+		long rem = 4444444L;
 		clickHref(index);
 		String list[] = {
 				"【农田】",
@@ -321,28 +421,36 @@ public class Farmer extends Thread{
 	 */
 	public void run(){
 			
-		try {
-
-			while (endFlag == 0){
+		while (endFlag == 0){
+			
+			long remain = 300000L;
+			try {
 				if (!login()){
 					MainAction.farmerMap.remove(email);
 					return;
 				}
 				enterRRFarm();
-				
 				fetch();
 				feed();
+				help();
 				//steal();
-
-				long remain = getNextTime();
-				System.out.println(name + ": 距下次工作还剩: " + (remain/3600000L) + "小时" + (remain%3600000L/60000L) + "分");
-				synchronized (this) {
-					wait(remain);
-					nextTime = null;
-				}
+				remain = Math.max(remain, getNextTime());
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				nextTime = new Date(System.currentTimeMillis() + remain);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+
+			
+			System.out.println(name + ": 距下次工作还剩: " + (remain/3600000L) + "小时" + (remain%3600000L/60000L) + "分");
+			synchronized (this) {
+				try {
+					wait(remain);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				nextTime = null;
+			}
 		}
 
 	}
