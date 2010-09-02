@@ -69,13 +69,13 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 		farmer.email = email;
 		farmer.pw = pw;
 
-		for (String st : feedFriends.split("\\s")) {
+		for (String st : feedFriends.split("[,，;；、\\.\\s]")) {
 			if (!st.isEmpty()){
 				farmer.feedFriends.add(st);
 			}
 		}
 
-		for (String st : stealFriends.split("\\s")) {
+		for (String st : stealFriends.split("[,，;；、\\.\\s]")) {
 			if (!st.isEmpty()){
 				farmer.stealFriends.add(st);
 			}
