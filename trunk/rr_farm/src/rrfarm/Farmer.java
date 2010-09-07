@@ -297,12 +297,13 @@ public class Farmer extends Thread{
 		clickHref(getHref("【好友农场】★"));
 		Matcher m;
 		while (true){
-			m = Pattern.compile("<a href=\"([\\s\\S]+?)\" class=\"blue\">([\\s\\S]+?)的农场").matcher(pageContent);
+			m = Pattern.compile("<a href=\"(\\S+?)\" class=\"blue\">([^<>]+?{1,20})的农场").matcher(pageContent);
 			while (m.find()){
 				String href = m.group(1);
 				String name = m.group(2);
 //				System.out.println("name = " + name);
-				if (feedFriends.contains(name) && !name.equals(this.name)){
+				if (feedFriends.contains(name) && href.contains("friend")){
+//					System.out.println("-"+name+"-"+this.name+"-");
 					friendList.add("http://mapps.renren.com" + href);
 				}
 			}
