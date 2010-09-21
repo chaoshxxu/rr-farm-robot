@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="rr_farm"
+  id="myeclipse.1279950779140"
+  context-root="/rr_farm"
+  j2ee-spec="5.0"
+  archive="rr_farm.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+
