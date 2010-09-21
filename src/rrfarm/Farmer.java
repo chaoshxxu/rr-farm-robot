@@ -23,7 +23,7 @@ import org.apache.http.protocol.HTTP;
 
 /**
  * 农民类，也就是自动工作的线程，一个账号一个
- * @author Administrator
+ * @author Administrator xuhan
  *
  */
 @SuppressWarnings("unchecked")
