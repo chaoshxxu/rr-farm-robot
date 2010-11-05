@@ -40,5 +40,10 @@
 			<result name="success" type="redirect">toIndex.action</result>		
 	    </action>
 
+	    <!-- 跳转至日志 -->
+        <action name="logs" class="rrfarm.MainAction" method="logs">
+	        <result name="success">/logs.jsp</result>
+	    </action>
+
 	</package>
 </struts>

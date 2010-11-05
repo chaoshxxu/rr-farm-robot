@@ -73,20 +73,19 @@ public class Farmer extends Thread{
 	private String getHref(String name) {
 		Matcher m = Pattern.compile("href=\"([^\"]*)\"[^>]*?>\\s*" + name + "\\s*<").matcher(pageContent);
 		String href = m.find() ? m.group(1) : null;
-//		if (href != null){
-//			System.out.println(name + " - " + href);
-//		}
-//		System.out.println(pageContent + "\n*******************\n" + name + " - " + href);
+		if (href != null){
+			System.out.println(name + " - " + href);
+		}
+		System.out.println(name + " - " + href);
 		return href;
 	}
 	
 	/**
 	 * 点击链接
 	 * @param href
-	 * @throws HttpException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private void clickHref(String href) throws HttpException, IOException {
+	private void clickHref(String href) throws Exception {
 		if (!href.startsWith("http")){
 			href = "http://mapps.renren.com" + href;
 		}
@@ -96,15 +95,18 @@ public class Farmer extends Thread{
         this.hc.executeMethod(getMethod);
 		byte[] responseBody = getMethod.getResponseBody();
         pageContent = new String(responseBody, "UTF-8");
+        if (pageContent.contains("发生错误")){
+        	throw new Exception();
+        }
 	}
 	
 	/**
 	 * 登陆
 	 * @return
-	 * @throws HttpException
-	 * @throws IOException
+	 * @throws Exception 
+	 * @throws Exception 
 	 */
-	private boolean login() throws HttpException, IOException {
+	private void login() throws Exception {
 		clickHref("http://3g.renren.com/home.do");
 		
 		PostMethod postMethod = new PostMethod("http://3g.renren.com/login.do");
@@ -131,17 +133,17 @@ public class Farmer extends Thread{
 		
 		this.hc.getParams().setContentCharset(HTTP.UTF_8);
 		postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		try {
-			System.out.println("login...");
+
+		System.out.println("login...");
 			int statusCode = this.hc.executeMethod(postMethod);
 			System.out.println("statusCode = " + statusCode);
 			
             byte[] responseBody = postMethod.getResponseBody();
-            String tLine = new String(responseBody, "UTF-8");
-            System.out.println("tLine = " + tLine);
+            //String tLine = new String(responseBody, "UTF-8");
+            //System.out.println("tLine = " + tLine);
 
             if (statusCode != HttpStatus.SC_MOVED_TEMPORARILY){
-				return false;
+            	throw new Exception();
 			}
 
 			clickHref(postMethod.getResponseHeader("Location").getValue());
@@ -149,21 +151,14 @@ public class Farmer extends Thread{
     		Matcher m = Pattern.compile("<div class=\"sec stat\"><b>([\\s\\S]+?):").matcher(pageContent);
     		if (m.find()){
     			name = m.group(1);
-    			return true;
     		}
-        } catch(Exception e) {
-        	e.printStackTrace();
-            postMethod.releaseConnection();
-        }
-       	return false;
 	}
 	
 	/**
 	 * 进入农场
-	 * @throws HttpException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private void enterRRFarm() throws HttpException, IOException {
+	private void enterRRFarm() throws Exception {
 		String href = getHref("应用");
 		clickHref(href);
 		href = getHref("人人农场");
@@ -173,10 +168,9 @@ public class Farmer extends Thread{
 	
 	/**
 	 * 收菜
-	 * @throws HttpException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private void fetch() throws HttpException, IOException {
+	private void fetch() throws Exception {
 		clickHref(index);
 		if (pageContent.contains("【农田】★")){
 			clickHref(getHref( "【农田】★"));
@@ -223,10 +217,9 @@ public class Farmer extends Thread{
 	
 	/**
 	 * 喂畜生、喂机器
-	 * @throws HttpException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private void feed() throws HttpException, IOException {
+	private void feed() throws Exception {
 		List<String> hrefList = new ArrayList();
 		
 		if (pageContent.contains("【畜牧】★")){
@@ -286,10 +279,9 @@ public class Farmer extends Thread{
 	
 	/**
 	 * 帮别人喂畜生、喂机器
-	 * @throws HttpException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private void help() throws HttpException, IOException {
+	private void help() throws Exception {
 		clickHref(index);
 		if (!pageContent.contains("【好友农场】★")){
 			return;
@@ -302,9 +294,9 @@ public class Farmer extends Thread{
 			while (m.find()){
 				String href = m.group(1);
 				String name = m.group(2);
-//				System.out.println("name = " + name);
+				System.out.println("name = " + name);
 				if (feedFriends.contains(name) && href.contains("friend")){
-//					System.out.println("-"+name+"-"+this.name+"-");
+					System.out.println("-"+name+"-"+this.name+"-");
 					friendList.add("http://mapps.renren.com" + href);
 				}
 			}
@@ -378,10 +370,9 @@ public class Farmer extends Thread{
 	/**
 	 * 获取下次开始工作的时间
 	 * @return 下次工作还要等多少毫秒
-	 * @throws HttpException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private long getNextTime() throws HttpException, IOException {
+	private long getNextTime() throws Exception {
 		long rem = 4444444L;
 		clickHref(index);
 		String list[] = {
@@ -427,22 +418,17 @@ public class Farmer extends Thread{
 			
 			long remain = 300000L;
 			try {
-				if (!login()){
-					MainAction.farmerMap.remove(email);
-					return;
-				}
+				login();
 				enterRRFarm();
 				fetch();
 				feed();
 				help();
 				//steal();
 				remain = Math.max(remain, getNextTime());
-				
 			} catch (Exception e) {
 				e.printStackTrace();
 				nextTime = new Date(System.currentTimeMillis() + remain);
 			}
-
 			
 			System.out.println(name + ": 距下次工作还剩: " + (remain/3600000L) + "小时" + (remain%3600000L/60000L) + "分");
 			synchronized (this) {

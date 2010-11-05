@@ -1,5 +1,9 @@
 package rrfarm;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -7,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.taglibs.standard.lang.jstl.test.beans.PublicBean1;
 
 
 import com.opensymphony.xwork2.ActionSupport;
@@ -17,10 +22,6 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	private static final long serialVersionUID = 1L;
 
 	static public Map farmerMap;
-	static {
-		System.out.println("init farmerMap...");
-		farmerMap = new HashMap<String, Farmer>();
-	}
 	
 	public List list;
 	public String name;
@@ -31,6 +32,15 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	public String reservedFood;
 	public HttpServletRequest request;
 	public String tip;
+	private String info;
+	static public ByteArrayOutputStream out = new ByteArrayOutputStream();
+	
+	static {
+		System.setOut(new PrintStream(out)); // 重定向sysout  
+		System.setErr(new PrintStream(out)); // 重定向syserr
+		System.out.println("init farmerMap...");
+		farmerMap = new HashMap<String, Farmer>();
+	}
 	
 	public void getUserList() {
 		list = new ArrayList<String>();
@@ -48,6 +58,11 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	public String toIndex(){
 		getUserList();
 //		System.out.println("farmerMap.size() = " + farmerMap.size());
+		return SUCCESS;
+	}
+
+	public String logs() throws UnsupportedEncodingException{
+		info = new String(out.toByteArray(), "GB2312");
 		return SUCCESS;
 	}
 	
@@ -189,5 +204,16 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	public void setReservedFood(String reservedFood) {
 		this.reservedFood = reservedFood;
 	}
+
+	public String getInfo() {
+		return info;
+	}
+
+	public void setInfo(String info) {
+		this.info = info;
+	}
+
+	
+	
 
 }
