@@ -62,7 +62,7 @@ public class MainAction extends ActionSupport implements ServletRequestAware{
 	}
 
 	public String logs() throws UnsupportedEncodingException{
-		info = new String(out.toByteArray(), "GB2312");
+//		info = new String(out.toByteArray(), "GB2312");
 		return SUCCESS;
 	}
 	
