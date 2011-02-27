@@ -71,7 +71,7 @@ public class Farmer extends Thread{
 	 * @return
 	 */
 	private String getHref(String name) {
-		Matcher m = Pattern.compile("href=\"([^\"]*)\"[^>]*?>\\s*" + name + "\\s*<").matcher(pageContent);
+		Matcher m = Pattern.compile("href=\"([^\"]*)\"[^<>]*?>\\s*(<[^<>]+>\\s*)*" + name + "\\s*<").matcher(pageContent);
 		String href = m.find() ? m.group(1) : null;
 		if (href != null){
 			System.out.println(name + " - " + href);
